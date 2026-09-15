@@ -1,0 +1,50 @@
+{
+  "name": "openlabeller",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "konva": "^10.5.0",
+    "lucide-react": "^1.46.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-konva": "^19.2.7",
+    "tailwindcss": "^4.3.3",
+    "use-image": "^1.1.4"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0",
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@vitejs/plugin-react": "^6.1.1",
+    "concurrently": "^10.0.5",
+    "cross-env": "^10.1.0",
+    "electron": "^44.3.0",
+    "electron-builder": "^26.15.3",
+    "oxlint": "^1.81.0",
+    "typescript": "~6.0.2",
+    "vite": "^8.3.0",
+    "vite-plugin-electron": "^1.1.2",
+    "vite-plugin-electron-renderer": "^1.0.0",
+    "wait-on": "^9.1.0"
+  },
+  "build": {
+    "appId": "com.openlabeller.app",
+    "productName": "OpenLabeller",
+    "files": ["dist", "dist-electron"],
+    "extraResources": [{ "from": "resources/backend", "to": "backend" }],
+    "win": {
+      "target": "nsis"
+    }
+  }
+}
