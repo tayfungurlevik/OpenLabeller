@@ -1,14 +1,46 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
 @import "tailwindcss";
 
+@theme {
+  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --color-app: #12121a;
+  --color-surface-1: #17171f;
+  --color-surface-2: #1d1d27;
+  --color-surface-3: #23232e;
+  --color-line: rgba(255, 255, 255, 0.08);
+  --color-line-2: rgba(255, 255, 255, 0.16);
+  --color-ink-1: #f2f1f7;
+  --color-ink-2: #9a98a8;
+  --color-ink-3: #63616f;
+  --color-accent: #7c6cff;
+  --color-accent-hover: #8f81ff;
+  --color-accent-soft: rgba(124, 108, 255, 0.14);
+}
+
 :root {
-  color-scheme: light dark;
+  color-scheme: dark;
 }
 
 body {
   margin: 0;
-  font-family:
-    "Segoe UI",
-    system-ui,
-    -apple-system,
-    sans-serif;
+  background: var(--color-app);
+  color: var(--color-ink-1);
+  font-family: var(--font-sans);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
 }

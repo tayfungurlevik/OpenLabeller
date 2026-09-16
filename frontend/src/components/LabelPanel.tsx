@@ -41,39 +41,45 @@ export default function LabelPanel({
   }
 
   return (
-    <div className="flex w-64 shrink-0 flex-col gap-4 overflow-y-auto border-l border-neutral-200 p-4 dark:border-neutral-800">
-      <label className="flex items-center justify-between text-sm text-neutral-600 dark:text-neutral-300">
+    <div className="flex w-72 shrink-0 flex-col gap-6 overflow-y-auto border-l border-line bg-surface-1 p-4">
+      <label className="flex items-center justify-between text-[13px] text-ink-2">
         <span>Allow multiple labels</span>
-        <input
-          type="checkbox"
-          checked={project.multi_label}
-          onChange={handleMultiToggle}
-          className="h-4 w-4 accent-blue-600"
-        />
+        <span
+          onClick={handleMultiToggle}
+          className={`relative h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors ${
+            project.multi_label ? 'bg-accent' : 'bg-surface-3'
+          }`}
+        >
+          <span
+            className={`absolute top-0.5 h-4 w-4 rounded-full bg-ink-1 transition-transform ${
+              project.multi_label ? 'translate-x-[18px]' : 'translate-x-0.5'
+            }`}
+          />
+        </span>
       </label>
 
       <div>
-        <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">Labels</h3>
-        <div className="mt-2 flex gap-2">
+        <h3 className="text-[13.5px] font-semibold text-ink-1">Labels</h3>
+        <div className="mt-2.5 flex gap-2">
           <input
             value={newLabel}
             onChange={(e) => setNewLabel(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
             placeholder="New label name"
-            className="min-w-0 flex-1 rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+            className="min-w-0 flex-1 rounded-lg border border-line bg-surface-2 px-3 py-1.5 text-[13.5px] text-ink-1 placeholder:text-ink-3"
           />
           <button
             type="button"
             onClick={handleAdd}
-            className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm font-medium hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800"
+            className="rounded-lg border border-line-2 px-3.5 py-1.5 text-[13px] font-medium text-ink-2 transition-colors hover:bg-white/5 hover:text-ink-1"
           >
             Add
           </button>
         </div>
-        {error && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>}
+        {error && <p className="mt-1.5 text-xs text-[#FF6B5C]">{error}</p>}
       </div>
 
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-1">
         {project.labels.map((label) => {
           const active = activeLabels.includes(label.name)
           return (
@@ -81,15 +87,16 @@ export default function LabelPanel({
               key={label.name}
               type="button"
               onClick={() => onLabelClick(label.name)}
-              className={`flex items-center justify-between rounded-md border px-3 py-2 text-left text-sm font-medium transition-colors ${
-                active
-                  ? 'text-white'
-                  : 'border-neutral-300 text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800'
-              }`}
-              style={active ? { backgroundColor: label.color, borderColor: label.color } : undefined}
+              className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] font-medium transition-colors hover:bg-white/5"
+              style={active ? { background: 'var(--color-accent-soft)' } : undefined}
             >
-              <span>{label.name}</span>
-              {label.shortcut && <span className="text-xs opacity-70">{label.shortcut}</span>}
+              <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: label.color }} />
+              <span className={`flex-1 ${active ? 'font-semibold text-ink-1' : 'text-ink-2'}`}>{label.name}</span>
+              {label.shortcut && (
+                <span className="rounded-md bg-surface-3 px-1.5 py-0.5 font-mono text-[10.5px] text-ink-2">
+                  {label.shortcut}
+                </span>
+              )}
             </button>
           )
         })}

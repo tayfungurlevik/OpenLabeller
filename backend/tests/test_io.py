@@ -4,6 +4,7 @@ from pathlib import Path
 from PIL import Image
 
 from openlabeller.audio import io as audio_io
+from openlabeller.audio.model import AudioItem
 from openlabeller.core.project import Project, TaskType
 from openlabeller.image import exporters
 from openlabeller.image import io as image_io
@@ -139,3 +140,27 @@ def test_audio_list_and_annotations_roundtrip(tmp_path: Path):
     reloaded_by_id = {i.id: i.labels for i in reloaded}
     assert reloaded_by_id["clip1.wav"] == ["speech"]
     assert reloaded_by_id["clip2.mp3"] == []
+
+
+def test_audio_convert_to_wav_and_carry_over_annotation(tmp_path: Path):
+    import numpy as np
+    import soundfile as sf
+
+    sr = 16000
+    t = np.linspace(0, 0.3, int(sr * 0.3), endpoint=False)
+    wave = (0.2 * np.sin(2 * np.pi * 440 * t)).astype(np.float32)
+    mp3_path = tmp_path / "clip.mp3"
+    sf.write(str(mp3_path), wave, sr, format="MP3")
+
+    wav_path = audio_io.convert_to_wav(mp3_path)
+    assert wav_path == tmp_path / "clip.wav"
+    assert wav_path.is_file()
+    data, samplerate = sf.read(str(wav_path))
+    assert samplerate == sr
+    assert len(data) > 0
+
+    project = Project.create(TaskType.AUDIO, data_dir=tmp_path, name="Audio Convert Test")
+    audio_io.save_annotations(project, [AudioItem(id="clip.mp3", path=mp3_path, labels=["speech"])])
+    audio_io.carry_over_annotation(project, "clip.mp3", "clip.wav")
+    annotations = audio_io.load_annotations(project)
+    assert annotations["clip.wav"] == ["speech"]

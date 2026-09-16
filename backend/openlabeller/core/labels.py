@@ -2,13 +2,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-# A palette of visually distinct colors, auto-assigned to new label classes
-# in order so that adjacent classes are easy to tell apart.
+# A palette of visually distinct, vivid colors -- legible against the app's
+# dark UI -- auto-assigned to new label classes in order so that adjacent
+# classes are easy to tell apart.
 DEFAULT_PALETTE = [
-    "#e6194b", "#3cb44b", "#4363d8", "#f58231", "#911eb4",
-    "#46f0f0", "#f032e6", "#bcf60c", "#fabebe", "#008080",
-    "#e6beff", "#9a6324", "#fffac8", "#800000", "#aaffc3",
-    "#808000", "#ffd8b1", "#000075", "#808080", "#ffe119",
+    "#7C6CFF", "#FF6B5C", "#4CD98A", "#4FD1F7", "#FFB84C",
+    "#FF6CC9", "#5C8CFF", "#B6E24C", "#C26CFF", "#4CD9C0",
 ]
 
 

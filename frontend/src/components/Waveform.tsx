@@ -31,18 +31,17 @@ export default function Waveform({
     canvas.height = rect.height * dpr
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 
-    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    ctx.fillStyle = isDark ? '#202020' : '#f3f3f3'
+    ctx.fillStyle = '#17171f'
     ctx.fillRect(0, 0, rect.width, rect.height)
 
     if (!peaks || peaks.length === 0) {
-      ctx.fillStyle = '#888888'
-      ctx.font = '13px system-ui'
+      ctx.fillStyle = '#63616f'
+      ctx.font = '13px "Space Grotesk", system-ui, sans-serif'
       ctx.textAlign = 'center'
       ctx.fillText('Waveform preview unavailable for this file', rect.width / 2, rect.height / 2)
     } else {
       const mid = rect.height / 2
-      ctx.strokeStyle = '#3ddc97'
+      ctx.strokeStyle = '#7c6cff'
       ctx.beginPath()
       peaks.forEach(([min, max], i) => {
         const x = (rect.width * i) / peaks.length
@@ -54,7 +53,7 @@ export default function Waveform({
       ctx.stroke()
     }
 
-    ctx.strokeStyle = isDark ? '#ffffff' : '#000000'
+    ctx.strokeStyle = '#f2f1f7'
     ctx.lineWidth = 2
     const px = rect.width * progress
     ctx.beginPath()
@@ -73,7 +72,7 @@ export default function Waveform({
       ref={canvasRef}
       onClick={handleClick}
       data-testid="waveform"
-      className="h-36 w-full cursor-pointer rounded-md"
+      className="h-56 w-full cursor-pointer rounded-2xl border border-line"
     />
   )
 }

@@ -89,6 +89,14 @@ export const api = {
       method: 'PUT',
       body: JSON.stringify({ labels }),
     }),
+  convertAudioToWav: (dir: string, name?: string) =>
+    request<{ converted: string[]; skipped: string[]; errors: { file: string; error: string }[] }>(
+      '/api/audio/convert',
+      {
+        method: 'POST',
+        body: JSON.stringify({ dir, name }),
+      },
+    ),
   exportAudio: (dir: string, format: 'csv' | 'jsonl', path: string) =>
     request<{ status: string }>(`/api/audio/export?${new URLSearchParams({ dir, format, path })}`, {
       method: 'POST',

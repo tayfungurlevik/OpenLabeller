@@ -16,12 +16,12 @@ export default function NavBar({
   children?: ReactNode
 }) {
   return (
-    <div className="flex items-center gap-3 border-t border-neutral-200 px-4 py-3 dark:border-neutral-800">
+    <div className="flex h-[52px] shrink-0 items-center gap-3 border-t border-line bg-surface-1 px-4">
       <button
         type="button"
         onClick={onPrev}
         disabled={!canPrev}
-        className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm font-medium hover:bg-neutral-100 disabled:opacity-40 dark:border-neutral-700 dark:hover:bg-neutral-800"
+        className="rounded-lg border border-line-2 px-3.5 py-1.5 text-[12.5px] font-medium text-ink-2 transition-colors hover:bg-white/5 hover:text-ink-1 disabled:opacity-40"
       >
         &lt; Previous
       </button>
@@ -29,11 +29,11 @@ export default function NavBar({
         type="button"
         onClick={onNext}
         disabled={!canNext}
-        className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm font-medium hover:bg-neutral-100 disabled:opacity-40 dark:border-neutral-700 dark:hover:bg-neutral-800"
+        className="rounded-lg border border-line-2 px-3.5 py-1.5 text-[12.5px] font-medium text-ink-2 transition-colors hover:bg-white/5 hover:text-ink-1 disabled:opacity-40"
       >
         Next &gt;
       </button>
-      <div className="flex-1 text-center text-sm text-neutral-500 dark:text-neutral-400">{progressText}</div>
+      <div className="flex-1 text-center font-mono text-xs text-ink-2">{progressText}</div>
       <div className="flex items-center gap-2">{children}</div>
     </div>
   )

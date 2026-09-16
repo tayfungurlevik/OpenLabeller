@@ -75,6 +75,27 @@ def compute_peaks(path: Path, num_buckets: int = 800) -> np.ndarray | None:
     return np.stack([mins, maxs], axis=1)
 
 
+def convert_to_wav(path: Path, dest: Path | None = None) -> Path:
+    """Decode `path` (mp3 or any libsndfile-supported format) and write it
+    out as a 16-bit PCM .wav file. Returns the path of the written file."""
+    import soundfile as sf
+
+    dest = dest or path.with_suffix(".wav")
+    data, samplerate = sf.read(str(path), always_2d=True, dtype="float32")
+    sf.write(str(dest), data, samplerate, subtype="PCM_16")
+    return dest
+
+
+def carry_over_annotation(project: Project, src_name: str, dst_name: str) -> None:
+    """Copy an existing label assignment from one dataset item id to another,
+    e.g. after converting `clip.mp3` to `clip.wav`. No-op if the source has
+    no labels or the destination already has some."""
+    annotations = load_annotations(project)
+    if src_name in annotations and dst_name not in annotations:
+        annotations[dst_name] = annotations[src_name]
+        save_json_atomic(annotations_path(project), annotations)
+
+
 def export_csv(items: list[AudioItem], path: Path) -> None:
     with open(path, "w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f)

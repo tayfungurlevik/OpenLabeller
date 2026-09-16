@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import type { Project } from './api/types'
+import { SettingsProvider } from './context/SettingsContext'
 import AudioWorkspace from './pages/AudioWorkspace'
 import ImageWorkspace from './pages/ImageWorkspace'
 import Launcher from './pages/Launcher'
 import TextWorkspace from './pages/TextWorkspace'
 
-export default function App() {
+function AppRoutes() {
   const [project, setProject] = useState<Project | null>(null)
 
   if (!project) {
@@ -22,4 +23,12 @@ export default function App() {
     case 'audio':
       return <AudioWorkspace project={project} onBack={goToLauncher} />
   }
+}
+
+export default function App() {
+  return (
+    <SettingsProvider>
+      <AppRoutes />
+    </SettingsProvider>
+  )
 }

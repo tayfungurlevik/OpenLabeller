@@ -84,6 +84,11 @@ class ExportRequest(BaseModel):
     path: str
 
 
+class ConvertAudioRequest(BaseModel):
+    dir: str
+    name: str | None = None  # a single file; omit to convert every .mp3 in the folder
+
+
 # ---- health -----------------------------------------------------------------
 @app.get("/health")
 def health() -> dict:
@@ -273,6 +278,41 @@ def put_audio_item(dir: str, id: str, payload: ItemLabelsRequest) -> dict:
     item.labels = payload.labels
     audio_io.save_annotations(project, items)
     return {"status": "ok"}
+
+
+@app.post("/api/audio/convert")
+def convert_audio(req: ConvertAudioRequest) -> dict:
+    """Convert .mp3 file(s) in the project's data folder to .wav, alongside
+    the originals. Existing .wav files are left untouched (skipped), and any
+    labels already assigned to a converted .mp3 carry over to its new .wav."""
+    project = _load_project(req.dir)
+    if req.name:
+        path = project.data_dir / req.name
+        if not path.is_file():
+            raise HTTPException(status_code=404, detail="Audio file not found")
+        targets = [path]
+    else:
+        targets = [p for p in audio_io.list_audio_files(project.data_dir) if p.suffix.lower() == ".mp3"]
+
+    converted: list[str] = []
+    skipped: list[str] = []
+    errors: list[dict[str, str]] = []
+    for path in targets:
+        if path.suffix.lower() != ".mp3":
+            continue
+        wav_path = path.with_suffix(".wav")
+        if wav_path.exists():
+            skipped.append(wav_path.name)
+            continue
+        try:
+            audio_io.convert_to_wav(path, wav_path)
+        except Exception as exc:
+            errors.append({"file": path.name, "error": str(exc)})
+            continue
+        audio_io.carry_over_annotation(project, path.name, wav_path.name)
+        converted.append(wav_path.name)
+
+    return {"converted": converted, "skipped": skipped, "errors": errors}
 
 
 @app.post("/api/audio/export")

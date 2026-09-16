@@ -1,21 +1,30 @@
 import { Image, Music, type LucideIcon, FileText } from 'lucide-react'
 import type { TaskType } from '../api/types'
 
-const TASK_INFO: Record<TaskType, { icon: LucideIcon; title: string; description: string }> = {
+const TASK_INFO: Record<
+  TaskType,
+  { icon: LucideIcon; title: string; description: string; tint: string; solid: string }
+> = {
   image: {
     icon: Image,
     title: 'Image labeling',
     description: 'Draw bounding boxes, polygons, circles, lines and points on images.',
+    tint: 'bg-accent',
+    solid: 'text-app',
   },
   text: {
     icon: FileText,
     title: 'Text classification',
     description: 'Assign categories to documents, sentences, or CSV/JSONL rows.',
+    tint: 'bg-[#4FD1F7]/15',
+    solid: 'text-[#4FD1F7]',
   },
   audio: {
     icon: Music,
     title: 'Audio classification',
     description: 'Listen to audio clips and assign categories with waveform playback.',
+    tint: 'bg-[#FF6B5C]/15',
+    solid: 'text-[#FF6B5C]',
   },
 }
 
@@ -28,24 +37,23 @@ export default function TaskCard({
   selected: boolean
   onClick: () => void
 }) {
-  const { icon: Icon, title, description } = TASK_INFO[task]
+  const { icon: Icon, title, description, tint, solid } = TASK_INFO[task]
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`flex w-56 flex-col gap-3 rounded-xl border p-5 text-left transition-colors ${
+      className={`flex w-[240px] flex-col gap-4 rounded-2xl border p-6 text-left transition-all hover:-translate-y-0.5 ${
         selected
-          ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40'
-          : 'border-neutral-200 bg-white hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:hover:border-neutral-600'
+          ? 'border-accent bg-surface-2 shadow-[0_0_0_4px_var(--color-accent-soft)]'
+          : 'border-line bg-surface-2 hover:border-line-2'
       }`}
     >
-      <Icon
-        size={28}
-        className={selected ? 'text-blue-600 dark:text-blue-400' : 'text-neutral-500 dark:text-neutral-400'}
-      />
-      <div className="font-semibold text-neutral-900 dark:text-neutral-100">{title}</div>
-      <div className="text-sm text-neutral-500 dark:text-neutral-400">{description}</div>
+      <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${tint}`}>
+        <Icon size={22} className={solid} />
+      </div>
+      <div className="font-semibold text-ink-1">{title}</div>
+      <div className="text-[13.5px] leading-relaxed text-ink-2">{description}</div>
     </button>
   )
 }

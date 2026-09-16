@@ -1,8 +1,9 @@
 import Konva from 'konva'
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
-import { Circle, Image as KonvaImage, Layer, Line, Rect, Stage, Transformer } from 'react-konva'
+import { Circle, Image as KonvaImage, Label, Layer, Line, Rect, Stage, Tag, Text, Transformer } from 'react-konva'
 import useImage from 'use-image'
 import type { ShapeData, ShapeType } from '../api/types'
+import type { AppSettings } from '../hooks/useSettings'
 
 export type Tool = 'select' | ShapeType
 
@@ -28,6 +29,22 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max)
 }
 
+/** Convert a "#rrggbb" color + an opacity percentage (0-100) into an
+ * "#rrggbbaa" string usable as a Konva fill. */
+function withOpacity(color: string, opacityPercent: number): string {
+  const alpha = Math.round(clamp(opacityPercent, 0, 100) * 2.55)
+  return `${color}${alpha.toString(16).padStart(2, '0')}`
+}
+
+/** The top-left-most point of a shape, used to anchor its label text. */
+function labelAnchor(shape: ShapeData): Point {
+  const [first, ...rest] = shape.points
+  return rest.reduce((min, [x, y]) => (y < min.y || (y === min.y && x < min.x) ? { x, y } : min), {
+    x: first[0],
+    y: first[1],
+  })
+}
+
 const ImageCanvas = forwardRef<
   ImageCanvasHandle,
   {
@@ -38,6 +55,7 @@ const ImageCanvas = forwardRef<
     tool: Tool
     selectedIndex: number | null
     labelColors: Record<string, string>
+    settings: AppSettings
     onSelectIndex: (index: number | null) => void
     onShapeFinished: (draft: ShapeData) => void
     onShapeEdited: (index: number, points: [number, number][]) => void
@@ -52,6 +70,7 @@ const ImageCanvas = forwardRef<
     tool,
     selectedIndex,
     labelColors,
+    settings,
     onSelectIndex,
     onShapeFinished,
     onShapeEdited,
@@ -250,7 +269,8 @@ const ImageCanvas = forwardRef<
           y={Math.min(a.y, b.y)}
           width={Math.abs(b.x - a.x)}
           height={Math.abs(b.y - a.y)}
-          stroke="#00c853"
+          stroke="#7C6CFF"
+          strokeWidth={settings.lineWidth}
           dash={[4, 4]}
           listening={false}
         />
@@ -259,13 +279,24 @@ const ImageCanvas = forwardRef<
     if (data.shape_type === 'circle') {
       const [c, r] = pts
       const radius = Math.hypot(r.x - c.x, r.y - c.y)
-      return <Circle x={c.x} y={c.y} radius={radius} stroke="#00c853" dash={[4, 4]} listening={false} />
+      return (
+        <Circle
+          x={c.x}
+          y={c.y}
+          radius={radius}
+          stroke="#7C6CFF"
+          strokeWidth={settings.lineWidth}
+          dash={[4, 4]}
+          listening={false}
+        />
+      )
     }
     if (data.shape_type === 'line' || data.shape_type === 'polygon') {
       return (
         <Line
           points={pts.flatMap((p) => [p.x, p.y])}
-          stroke="#00c853"
+          stroke="#7C6CFF"
+          strokeWidth={settings.lineWidth}
           dash={[4, 4]}
           closed={false}
           listening={false}
@@ -276,7 +307,12 @@ const ImageCanvas = forwardRef<
   }
 
   return (
-    <div ref={containerRef} className="relative h-full w-full overflow-hidden bg-neutral-100 dark:bg-neutral-900" data-testid="image-canvas-container">
+    <div
+      ref={containerRef}
+      className="relative h-full w-full overflow-hidden bg-[#0e0e14]"
+      style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,.05) 1px, transparent 1px)', backgroundSize: '26px 26px' }}
+      data-testid="image-canvas-container"
+    >
       <Stage
         ref={stageRef}
         width={containerSize.width}
@@ -304,11 +340,32 @@ const ImageCanvas = forwardRef<
               color={labelColors[shape.label] ?? LABEL_COLOR_FALLBACK}
               selected={selectedIndex === index}
               interactive={tool === 'select'}
+              settings={settings}
               onSelect={() => onSelectIndex(index)}
               onChange={(points) => onShapeEdited(index, points)}
               onDelete={() => onShapeDelete(index)}
             />
           ))}
+
+          {settings.showLabelText &&
+            shapes.map((shape, index) => {
+              if (!shape.label) return null
+              const anchor = labelAnchor(shape)
+              const color = labelColors[shape.label] ?? LABEL_COLOR_FALLBACK
+              return (
+                <Label key={`label-${index}`} x={anchor.x} y={anchor.y - settings.fontSize - 6} listening={false}>
+                  <Tag fill={color} />
+                  <Text
+                    text={shape.label}
+                    fontFamily={settings.fontFamily}
+                    fontSize={settings.fontSize}
+                    fontStyle="600"
+                    padding={3}
+                    fill="#100F17"
+                  />
+                </Label>
+              )
+            })}
 
           {draft && renderDraft(draft)}
         </Layer>
@@ -324,6 +381,7 @@ function EditableShape({
   color,
   selected,
   interactive,
+  settings,
   onSelect,
   onChange,
   onDelete,
@@ -332,6 +390,7 @@ function EditableShape({
   color: string
   selected: boolean
   interactive: boolean
+  settings: AppSettings
   onSelect: () => void
   onChange: (points: [number, number][]) => void
   onDelete: () => void
@@ -360,7 +419,7 @@ function EditableShape({
 
   const commonProps = {
     stroke: color,
-    strokeWidth: 2,
+    strokeWidth: settings.lineWidth,
     listening: interactive,
     draggable: interactive,
     onClick: onSelect,
@@ -381,7 +440,7 @@ function EditableShape({
           y={y}
           width={width}
           height={height}
-          fill={selected ? `${color}33` : undefined}
+          fill={selected ? withOpacity(color, settings.fillOpacity) : undefined}
           {...commonProps}
           onDragEnd={(e) => {
             const node = e.target
@@ -407,7 +466,7 @@ function EditableShape({
             ])
           }}
         />
-        {selected && interactive && <Transformer ref={trRef} rotateEnabled={false} />}
+        {selected && interactive && <Transformer ref={trRef} rotateEnabled={false} anchorStroke="#7C6CFF" anchorFill="#100F17" anchorSize={9} borderStroke="#7C6CFF" />}
       </>
     )
   }
@@ -422,7 +481,7 @@ function EditableShape({
           x={c[0]}
           y={c[1]}
           radius={radius}
-          fill={selected ? `${color}33` : undefined}
+          fill={selected ? withOpacity(color, settings.fillOpacity) : undefined}
           {...commonProps}
           onDragEnd={(e) => {
             const node = e.target
@@ -446,7 +505,7 @@ function EditableShape({
             ])
           }}
         />
-        {selected && interactive && <Transformer ref={trRef} rotateEnabled={false} keepRatio />}
+        {selected && interactive && <Transformer ref={trRef} rotateEnabled={false} keepRatio anchorStroke="#7C6CFF" anchorFill="#100F17" anchorSize={9} borderStroke="#7C6CFF" />}
       </>
     )
   }
@@ -457,7 +516,7 @@ function EditableShape({
       <Circle
         x={p[0]}
         y={p[1]}
-        radius={5}
+        radius={settings.pointRadius}
         fill={color}
         {...commonProps}
         onDragEnd={(e) => onChange([[e.target.x(), e.target.y()]])}
@@ -473,7 +532,7 @@ function EditableShape({
         ref={shapeRef}
         points={flat}
         closed={shape.shape_type === 'polygon'}
-        fill={shape.shape_type === 'polygon' && selected ? `${color}33` : undefined}
+        fill={shape.shape_type === 'polygon' && selected ? withOpacity(color, settings.fillOpacity) : undefined}
         {...commonProps}
         onDragEnd={(e) => {
           const node = e.target
@@ -490,10 +549,10 @@ function EditableShape({
             key={i}
             x={x}
             y={y}
-            radius={5}
+            radius={settings.pointRadius}
             fill="#ffffff"
             stroke={color}
-            strokeWidth={2}
+            strokeWidth={settings.lineWidth}
             draggable
             onDragMove={(e) => {
               const next = [...shape.points] as [number, number][]
@@ -506,4 +565,4 @@ function EditableShape({
   )
 }
 
-const LABEL_COLOR_FALLBACK = '#00c853'
+const LABEL_COLOR_FALLBACK = "#7C6CFF"

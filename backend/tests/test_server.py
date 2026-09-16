@@ -173,3 +173,40 @@ def test_audio_items_peaks_and_export(tmp_path: Path):
 
     resp = client.get("/api/audio/files", params={"dir": out_dir})
     assert resp.json()[0]["labels"] == ["music"]
+
+
+def test_audio_convert_mp3_to_wav_carries_over_labels(tmp_path: Path):
+    data_dir = tmp_path / "audio"
+    data_dir.mkdir()
+    sr = 16000
+    t = np.linspace(0, 0.3, int(sr * 0.3), endpoint=False)
+    wave = (0.2 * np.sin(2 * np.pi * 440 * t)).astype(np.float32)
+    sf.write(str(data_dir / "clip.mp3"), wave, sr, format="MP3")
+
+    project = client.post(
+        "/api/projects", json={"task_type": "audio", "data_dir": str(data_dir), "name": "Aud"}
+    ).json()
+    out_dir = project["output_dir"]
+
+    resp = client.put(
+        "/api/audio/item", params={"dir": out_dir, "id": "clip.mp3"}, json={"labels": ["music"]}
+    )
+    assert resp.status_code == 200
+
+    resp = client.post("/api/audio/convert", json={"dir": out_dir})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["converted"] == ["clip.wav"]
+    assert body["errors"] == []
+    assert (data_dir / "clip.wav").is_file()
+    assert (data_dir / "clip.mp3").is_file()  # original is kept
+
+    resp = client.get("/api/audio/files", params={"dir": out_dir})
+    files = {f["id"]: f["labels"] for f in resp.json()}
+    assert files["clip.wav"] == ["music"]
+    assert files["clip.mp3"] == ["music"]
+
+    # a second run is a no-op since clip.wav already exists
+    resp = client.post("/api/audio/convert", json={"dir": out_dir})
+    assert resp.json()["converted"] == []
+    assert resp.json()["skipped"] == ["clip.wav"]

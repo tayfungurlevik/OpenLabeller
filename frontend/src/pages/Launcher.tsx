@@ -47,33 +47,55 @@ export default function Launcher({ onProjectReady }: { onProjectReady: (project:
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 px-10 py-8 dark:bg-neutral-950">
-      <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-50">OpenLabeller</h1>
-      <p className="mt-1 text-neutral-500 dark:text-neutral-400">
-        Open-source labeling for images, text, and audio
-      </p>
+    <div className="relative min-h-screen overflow-hidden bg-app px-24 pt-20">
+      <div
+        className="pointer-events-none absolute -right-64 -top-80 h-[900px] w-[900px] rounded-full"
+        style={{ background: 'radial-gradient(circle, rgba(124,108,255,.28), transparent 68%)' }}
+      />
 
-      <div className="mt-8 flex flex-wrap gap-4">
+      <div className="relative z-10 flex items-center gap-2.5">
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-accent">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#100F17" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="4" y="6" width="16" height="12" rx="1.5" />
+          </svg>
+        </div>
+        <span className="text-[15px] font-bold tracking-tight text-ink-1">OpenLabeller</span>
+        <span className="ml-2 rounded-full border border-line bg-surface-2 px-2.5 py-0.5 font-mono text-[11px] text-ink-2">
+          local-first &middot; v0.2
+        </span>
+      </div>
+
+      <div className="relative z-10 mt-14">
+        <h1 className="m-0 text-[56px] font-bold leading-[1.05] tracking-tight text-ink-1">OpenLabeller</h1>
+        <p className="mt-3.5 max-w-lg text-base leading-relaxed text-ink-2">
+          Open-source labeling for images, text, and audio.
+        </p>
+      </div>
+
+      <div className="relative z-10 mt-12 flex flex-wrap gap-6">
         {(['image', 'text', 'audio'] as const).map((task) => (
           <TaskCard key={task} task={task} selected={selectedTask === task} onClick={() => setSelectedTask(task)} />
         ))}
       </div>
 
-      <div className="mt-10 max-w-xl">
-        <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Project folder</h2>
-        <div className="mt-2 flex gap-2">
+      <div className="relative z-10 mt-12 max-w-3xl">
+        <h2 className="font-mono text-[11px] tracking-[.08em] text-ink-3">PROJECT FOLDER</h2>
+        <div className="mt-2.5 flex gap-2.5">
           <input
             readOnly
             value={dataDir ?? ''}
             placeholder="Choose a folder with your images / texts / audio files..."
-            className="flex-1 rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-700 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200"
+            className="h-12 flex-1 rounded-[10px] border border-line bg-surface-2 px-4 text-sm text-ink-1 placeholder:text-ink-3"
           />
           <button
             type="button"
             onClick={handleBrowse}
-            className="rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800"
+            className="flex h-12 items-center gap-2 rounded-[10px] border border-line-2 px-5 text-sm font-medium text-ink-2 transition-colors hover:bg-white/5 hover:text-ink-1"
           >
-            Browse...
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 6.5A1.5 1.5 0 015.5 5h4l1.6 2H18.5A1.5 1.5 0 0120 8.5v9A1.5 1.5 0 0118.5 19h-13A1.5 1.5 0 014 17.5z" />
+            </svg>
+            Browse&hellip;
           </button>
         </div>
 
@@ -81,16 +103,16 @@ export default function Launcher({ onProjectReady }: { onProjectReady: (project:
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Project name (optional)"
-          className="mt-3 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-700 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200"
+          className="mt-3 h-12 w-[340px] rounded-[10px] border border-line bg-surface-2 px-4 text-sm text-ink-1 placeholder:text-ink-3"
         />
 
-        {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
+        {error && <p className="mt-3 text-sm text-[#FF6B5C]">{error}</p>}
 
         <button
           type="button"
           onClick={handleSubmit}
           disabled={busy}
-          className="mt-4 rounded-md bg-blue-600 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+          className="mt-5 h-[52px] rounded-xl bg-accent px-7 text-[14.5px] font-semibold text-app shadow-[0_10px_28px_rgba(124,108,255,.32)] transition-colors hover:bg-accent-hover disabled:opacity-60"
         >
           {busy ? 'Opening...' : 'Open / Create Project'}
         </button>
